@@ -1,0 +1,106 @@
+package ex1;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class TestConnection {
+
+	public static void main(String[] args) throws SQLException {
+        //Check this line before running it
+		String url = "jdbc:oracle:thin:@//localhost:1521/orcl";
+		//String url = "jdbc:oracle:thin:@localhost:1521:xe";
+
+		
+        //Establishing connection
+        Connection conn =DriverManager.getConnection(url,"hr","oracle");
+        
+        String sql = "select 'Hello World JDBC' from dual";
+        //Creating statement
+        Statement st = conn.createStatement();
+        ResultSet result = st.executeQuery(sql);
+        if(result.next()){
+            System.out.println(result.getString(1));
+        }
+        
+        
+        
+        //Display the employee number, last name, and salary of all employees who earn more than the average salary
+        String select1 = "Select employee_id, last_name, to_char(salary,'$99,999.00') sal from employees where salary > (select avg(salary) from employees)";        
+        ResultSet result1 = st.executeQuery(select1);
+        while(result1.next()){
+            System.out.println(result1.getInt("employee_id") + " " 
+            					+ result1.getString("last_name")+ " " 
+            					+ result1.getString("sal"));
+        }
+        
+        System.out.println("");
+        System.out.println("--Display the first name, last name, department name, address, city, country and region for all employees--");
+        //Display the first name, last name, department name, address, city, country and region for all employees 
+        String select2 = "Select first_name, last_name, department_name, street_address, city, country_name, region_name "
+        		+ "	from employees join departments using(department_id) "
+        		+ " join locations using(location_id) "
+        		+ " join countries using(country_id) "
+        		+ " join regions using(region_id) ";        
+        ResultSet result2 = st.executeQuery(select2);
+        while(result2.next()){
+            System.out.println(result2.getString("first_name") + " " 
+            					+ result2.getString("last_name")+ " " 
+            					+ result2.getString("department_name")+ " "
+            					+ result2.getString("street_address")+ " "
+            					+ result2.getString("city")+ " "
+            					+ result2.getString("country_name")+ " "
+            					+ result2.getString("region_name"));
+        }
+        
+        
+        //Display the number of departments grouped by regions. Show the region name, and the count of departments
+        System.out.println();
+        System.out.println("--Display the number of departments grouped by regions. Show the region name, and the count of departments--");
+        String select3 = "Select region_name, count(department_id) department "
+        		+ "	from departments join locations using(location_id) "
+        		+ " join countries using(country_id) "
+        		+ " join regions using(region_id) "
+        		+ " group by region_name";        
+        ResultSet result3 = st.executeQuery(select3);
+        while(result3.next()){
+            System.out.println(result3.getString("region_name") + " " 
+            					+ result3.getInt("department"));
+        }
+        
+        
+        //Display employees’ last names and employee numbers along with their managers’ last names and manager numbers
+        System.out.println();
+        System.out.println("--Display employees’ last names and employee numbers along with their managers’ last names and manager numbers--");
+        String select4 = "Select w.last_name emp_name, w.employee_id emp# , m.last_name mgr_name, m.employee_id mgr# "
+        		+ "	from employees w join employees m "
+        		+ " on (w.manager_id = m.employee_id)";        
+        ResultSet result4 = st.executeQuery(select4);
+        while(result4.next()){
+            System.out.println(result4.getString("emp_name") + " " 
+            					+ result4.getInt("emp#") + " " 
+            					+ result4.getString("mgr_name") + " " 
+            					+ result4.getInt("mgr#"));
+        }
+        
+        
+        //Display the first name and join date of the employees who joined between 2002 and 2005
+        System.out.println();
+        System.out.println("--Display the first name and join date of the employees who joined between 2002 and 2005--");
+        String select5 = "Select first_name, to_char(hire_date, 'DD/MM/YYYY') join_date"
+        		+ "	from employees"
+        		+ " where to_char(hire_date,'YYYY') IN ('2002','2005') ";        
+        ResultSet result5 = st.executeQuery(select5);
+        while(result5.next()){
+            System.out.println(result5.getString("first_name") + " " 
+            					+ result5.getString("join_date"));
+        }
+        
+        
+        st.close();
+        
+    }
+
+}
